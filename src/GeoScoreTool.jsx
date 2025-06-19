@@ -36,6 +36,14 @@ export default function GeoScoreTool() {
       return '';
     }
   };
+  
+   const hashScore = (text, max = 100, offset = 0) => {
+  let hash = 0;
+  for (let i = 0; i < text.length; i++) {
+    hash = text.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return (Math.abs(hash) % max) + offset;
+};
 
   const checkWikipedia = async (brand) => {
     const response = await fetch(`https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&titles=${brand}`);
@@ -92,7 +100,7 @@ export default function GeoScoreTool() {
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           className="w-full border p-2 rounded"
-          placeholder="e.g., https://herody.in"
+          placeholder="e.g., https://website.in"
         />
       </div>
 
@@ -145,7 +153,7 @@ export default function GeoScoreTool() {
               <ul className="list-disc pl-5 text-sm mt-2 space-y-1">
                 <li>Create Wikidata/Wikipedia with credible sources.</li>
                 <li>Publish GEO-powered articles (at least 20/month) on Medium, blogs, etc.</li>
-                <li>Publish articles on media resources like YourStory, Inc42, etc.</li>
+                <li>Perform Data Injections.</li>
                 <li>Add structured data (schema.org) to your website.</li>
               </ul>
             </div>
