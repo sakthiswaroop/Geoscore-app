@@ -79,10 +79,10 @@ const checkWikipedia = async (brand) => {
     setLogoUrl(logo);
     const recall = hashScore(url, 40); // Deterministic recall score (max 40)
     const seo = hashScore(url + 'seo', 25); // Deterministic SEO score (max 25)
-    const platforms = Math.min(15, hashScore(url + 'platforms', 10) + schemaScore);
+    const platformsScore = Math.min(15, hashScore(url + 'platforms', 10) + schemaScore);
     const wiki = await checkWikipedia(brand);
-    const platforms = Math.min(15, Math.floor(Math.random() * 5) + 5 + schemaScore);
-    const total = recall + wiki + seo + platforms;
+    const consistentPlatformsScore = Math.min(15, hashScore(url + 'consistent_platforms', 10) + schemaScore);
+    const total = recall + wiki + seo + consistentPlatformsScore;
 
     setScoreData({ brand, recall, wiki, seo, platforms, total });
     setIsCalculating(false);
