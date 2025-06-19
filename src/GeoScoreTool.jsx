@@ -52,10 +52,9 @@ export default function GeoScoreTool() {
       const data = await response.json();
       const searchResults = data.query.search;
       if (!searchResults || searchResults.length === 0) return 0;
-      // Check if brand name matches a result title (case-insensitive)
       const brandLower = brand.toLowerCase();
-      const hasMatch = searchResults.some(result => 
-        result.title.toLowerCase().includes(brandLower) || 
+      const hasMatch = searchResults.some(result =>
+        result.title.toLowerCase().includes(brandLower) ||
         brandLower.includes(result.title.toLowerCase())
       );
       return hasMatch ? 20 : 0;
@@ -84,9 +83,9 @@ export default function GeoScoreTool() {
     const logo = fetchLogo(url);
     setLogoUrl(logo);
 
-    const recall = hashScore(url, 40); // Deterministic recall score (max 40)
-    const seo = hashScore(url + 'seo', 25); // Deterministic SEO score (max 25)
-    const schemaScore = await checkSchemaMarkup(url); // Calculate schemaScore
+    const recall = hashScore(url, 40);
+    const seo = hashScore(url + 'seo', 25);
+    const schemaScore = await checkSchemaMarkup(url);
     const consistentPlatformsScore = Math.min(15, hashScore(url + 'consistent_platforms', 10) + schemaScore);
     const wiki = await checkWikipedia(brand);
     const total = recall + wiki + seo + consistentPlatformsScore;
@@ -101,8 +100,18 @@ export default function GeoScoreTool() {
       margin: [10, 10, 10, 10],
       filename: `${scoreData.brand}_GEO_Score_Report.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      html2canvas: { 
+        scale: 2, 
+        useCORS: true, 
+        logging: false,
+        backgroundColor: '#f3f4f6'
+      },
+      jsPDF: { 
+        unit: 'mm', 
+        format: 'a4', 
+        orientation: 'portrait' 
+      },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
     window.html2pdf().set(opt).from(element).save();
   };
@@ -156,13 +165,26 @@ export default function GeoScoreTool() {
 
       {scoreData && (
         <>
-          <div className="mt-6 bg-gray-100 p-6 rounded shadow" ref={reportRef}>
+          <div className="mt-6 bg-gray-100 p-6 rounded shadow print:bg-gray-100" ref={reportRef}>
+            <style>
+              {`
+                @media print {
+                  .print\\:bg-gray-100 { background-color: #f3f4f6 !important; }
+                  .text-blue-600 { color: #2563eb !important; }
+                  .text-gray-700 { color: #374151 !important; }
+                  img { max-width: 48px !important; max-height: 48px !important; }
+                  .no-print { display: none !important; }
+                  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                  .emoji::before { content: attr(data-emoji); }
+                }
+              `}
+            </style>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">
-                🎯 GEO Score for <span className="text-blue-600">{scoreData.brand}</span>: {scoreData.total}/100
+                <span className="emoji" data-emoji="🎯">🎯</span> GEO Score for <span className="text-blue-600">{scoreData.brand}</span>: {scoreData.total}/100
               </h2>
               {logoUrl && (
-                <img src={logoUrl} alt="Brand Logo" className="h-12 w-12 rounded" />
+                <img src={logoUrl} alt="Brand Logo" className="h-12 w-12 rounded" crossOrigin="anonymous" />
               )}
             </div>
 
@@ -174,7 +196,9 @@ export default function GeoScoreTool() {
             </ul>
 
             <div className="mt-5">
-              <h3 className="font-semibold">🛠 Suggestions to Improve:</h3>
+              <h3 className="font-semibold">
+                <span className="emoji" data-emoji="🛠">🛠</span> Suggestions to Improve:
+              </h3>
               <ul className="list-disc pl-5 text-sm mt-2 space-y-1">
                 <li>Create Wikidata/Wikipedia with credible sources.</li>
                 <li>Publish GEO-powered articles (at least 20/month) on Medium, blogs, etc.</li>
@@ -184,14 +208,14 @@ export default function GeoScoreTool() {
             </div>
 
             <div className="mt-6 border-t pt-4 text-center text-sm font-semibold text-gray-700" style={{ overflow: 'visible', height: 'auto' }}>
-              📩 Need help improving your GEO score? Reach out to <span className="text-blue-600">Mr. Swaroop</span> at <a href="mailto:Swaroop@herody.in" className="underline">Swaroop@herody.in</a>,
+              <span className="emoji" data-emoji="📩">📩</span> Need help improving your GEO score? Reach out to <span className="text-blue-600">Mr. Swaroop</span> at <a href="mailto:Swaroop@herody.in" className="underline">Swaroop@herody.in</a>,
               who has executed 1000+ Wikidata injections and is a recognized GEO specialist.
             </div>
           </div>
 
           <button
             onClick={downloadPDF}
-            className="mt-4 px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700"
+            className="mt-4 px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700 no-print"
           >
             Download Report as PDF
           </button>
