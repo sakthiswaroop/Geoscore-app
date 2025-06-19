@@ -70,11 +70,10 @@ export default function GeoScoreTool() {
     const brand = extractBrandName(url);
     const logo = fetchLogo(url);
     setLogoUrl(logo);
-
-    const recall = Math.floor(Math.random() * 25) + 10;
+    const recall = hashScore(url, 40); // Deterministic recall score (max 40)
+    const seo = hashScore(url + 'seo', 25); // Deterministic SEO score (max 25)
+    const platforms = Math.min(15, hashScore(url + 'platforms', 10) + schemaScore);
     const wiki = await checkWikipedia(brand);
-    const schemaScore = await checkSchemaMarkup(url);
-    const seo = Math.floor(Math.random() * 10) + 10;
     const platforms = Math.min(15, Math.floor(Math.random() * 5) + 5 + schemaScore);
     const total = recall + wiki + seo + platforms;
 
