@@ -51,8 +51,16 @@ export default function GeoScoreTool() {
       );
       const data = await response.json();
       const searchResults = data.query.search;
-      return searchResults && searchResults.length > 0 ? 20 : 0;
-    } catch {
+      if (!searchResults || searchResults.length === 0) return 0;
+      // Check if brand name matches a result title (case-insensitive)
+      const brandLower = brand.toLowerCase();
+      const hasMatch = searchResults.some(result => 
+        result.title.toLowerCase().includes(brandLower) || 
+        brandLower.includes(result.title.toLowerCase())
+      );
+      return hasMatch ? 20 : 0;
+    } catch (error) {
+      console.error('Wikipedia check failed:', error);
       return 0;
     }
   };
@@ -78,10 +86,9 @@ export default function GeoScoreTool() {
 
     const recall = hashScore(url, 40); // Deterministic recall score (max 40)
     const seo = hashScore(url + 'seo', 25); // Deterministic SEO score (max 25)
-    const schemaScore = await checkSchemaMarkup(url); // Calculate schemaScore first
-    const platformsScore = Math.min(15, hashScore(url + 'platforms', 10) + schemaScore);
-    const wiki = await checkWikipedia(brand);
+    const schemaScore = await checkSchemaMarkup(url); // Calculate schemaScore
     const consistentPlatformsScore = Math.min(15, hashScore(url + 'consistent_platforms', 10) + schemaScore);
+    const wiki = await checkWikipedia(brand);
     const total = recall + wiki + seo + consistentPlatformsScore;
 
     setScoreData({ brand, recall, wiki, seo, platforms: consistentPlatformsScore, total });
@@ -94,7 +101,7 @@ export default function GeoScoreTool() {
       margin: [10, 10, 10, 10],
       filename: `${scoreData.brand}_GEO_Score_Report.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
+      html2canvas: { scale: 2, useCORS: true },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
     };
     window.html2pdf().set(opt).from(element).save();
@@ -176,7 +183,7 @@ export default function GeoScoreTool() {
               </ul>
             </div>
 
-            <div className="mt-6 border-t pt-4 text-center text-sm font-semibold text-gray-700">
+            <div className="mt-6 border-t pt-4 text-center text-sm font-semibold text-gray-700" style={{ overflow: 'visible', height: 'auto' }}>
               📩 Need help improving your GEO score? Reach out to <span className="text-blue-600">Mr. Swaroop</span> at <a href="mailto:Swaroop@herody.in" className="underline">Swaroop@herody.in</a>,
               who has executed 1000+ Wikidata injections and is a recognized GEO specialist.
             </div>
