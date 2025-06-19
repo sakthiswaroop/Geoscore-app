@@ -45,12 +45,19 @@ export default function GeoScoreTool() {
   return (Math.abs(hash) % max) + offset;
 };
 
-  const checkWikipedia = async (brand) => {
-    const response = await fetch(`https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&titles=${brand}`);
+const checkWikipedia = async (brand) => {
+  try {
+    const response = await fetch(
+      `https://en.wikipedia.org/w/api.php?action=query&list=search&format=json&origin=*&srsearch=${encodeURIComponent(brand)}`
+    );
     const data = await response.json();
-    const pages = data.query.pages;
-    return !pages || Object.keys(pages)[0] === '-1' ? 0 : 20;
-  };
+    const searchResults = data.query.search;
+    return searchResults && searchResults.length > 0 ? 20 : 0;
+  } catch {
+    return 0;
+  }
+};
+
 
   const checkSchemaMarkup = async (inputUrl) => {
     try {
